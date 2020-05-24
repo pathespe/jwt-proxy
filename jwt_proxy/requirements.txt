@@ -1,0 +1,11 @@
+requests
+aiohttp
+pyjwt
+python-dotenv
+pytest-aiohttp
+redis
+pylint
+coverage
+cchardet
+aiodns
+asyncio

@@ -1,0 +1,44 @@
+version: '2'
+services:
+  jwt_proxy:
+    build:
+      context: .
+      dockerfile: jwt_proxy/Dockerfile
+    ports:
+     - "8000:8000"
+    volumes:
+     - .:/code
+    env_file:
+     - ./.env
+    networks:
+      - redis-net
+    depends_on:
+      - redis
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+     - "8001:8001"
+    volumes:
+     - .:/code
+    env_file:
+     - ./.env
+    networks:
+      - redis-net
+    depends_on:
+      - redis
+  redis:
+    image: redis:6.0.3-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    hostname: redis
+    networks:
+      - redis-net
+    volumes:
+      - redis-data:/data
+
+networks:
+  redis-net:
+
+volumes:
+  redis-data:
