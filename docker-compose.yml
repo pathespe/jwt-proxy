@@ -11,9 +11,7 @@ services:
     env_file:
      - ./.env
     networks:
-      - redis-net
-    depends_on:
-      - redis
+      - jwt-net
   server:
     build:
       context: .
@@ -25,20 +23,6 @@ services:
     env_file:
      - ./.env
     networks:
-      - redis-net
-    depends_on:
-      - redis
-  redis:
-    image: redis:6.0.3-alpine
-    command: ["redis-server", "--appendonly", "yes"]
-    hostname: redis
-    networks:
-      - redis-net
-    volumes:
-      - redis-data:/data
-
+      - jwt-net
 networks:
-  redis-net:
-
-volumes:
-  redis-data:
+  jwt-net:

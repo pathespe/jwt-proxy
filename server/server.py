@@ -1,11 +1,26 @@
+import os
 import json
+from datetime import datetime
+
 import aiohttp
+import jwt
+import requests
+from dotenv import load_dotenv
 from aiohttp import web
 
 
+load_dotenv(dotenv_path='.env', verbose=True)
+
+
 async def handle_post(request):
-    
-    return web.Response(body=json.dumps({"ayo": "a"}), headers={"contentType" : "application/json"})
+    data = jwt.decode(
+        request.headers["x-my-jwt"],
+        os.environ["SECRET"],
+        algorithm='HS512',
+        options={'require': ['jti', 'iat']}
+    )
+
+    return web.Response(body=json.dumps(data), headers={"contentType" : "application/json"})
 
 
 if __name__ == '__main__':

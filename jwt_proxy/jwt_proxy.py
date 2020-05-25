@@ -1,48 +1,53 @@
 import os
 import time
 import json
-from pathlib import Path
+import uuid
+
+from datetime import datetime
 import aiohttp
-from aiohttp import web
-from dotenv import load_dotenv
 import jwt
 import requests
+from dotenv import load_dotenv
+from aiohttp import web
 
 
-
-env_path = Path('.') / '.env'
-load_dotenv(dotenv_path=env_path, verbose=True)
-
-num_requests = 0
-start_time = time.time()
-
-
-print(os.getenv("SECRET"))
+load_dotenv(dotenv_path='.env', verbose=True)
 
 
 async def handle_status(request):
 
+    request.app['num_requests'] += 1
     body = {
-        "uptime" : time.time() - start_time,
-        "numberRequests" : num_requests
+        "uptime" : time.time() - request.app["start_time"],
+        "numberRequests" : request.app['num_requests']
     }
     return web.Response(body=json.dumps(body), headers={"contentType" : "application/json"})
 
 
+async def read_stream(request):
+    empty_bytes = b''
+    result = empty_bytes
+    while True:
+        chunk = await request.content.read(8)
+        if chunk == empty_bytes:
+            break
+        result += chunk
+    return result
+
+
+
 async def handle_post(request):
 
+
+    request.app['num_requests'] =+ 1
     if request.body_exists:
 
-        empty_bytes = b''
-        result = empty_bytes
-        while True:
-            chunk = await request.content.read(8)
-            if chunk == empty_bytes:
-                break
-            result += chunk
-
+        body = await read_stream(request)
+        data = json.loads(body.decode("utf-8"))
+        data["iat"] = datetime.utcnow()
+        data["jti"] = str(uuid.uuid4())
         encoded_jwt = jwt.encode(
-            json.loads(result.decode("utf-8")), 
+            data, 
             os.environ["SECRET"], 
             algorithm='HS512'
         )
@@ -50,20 +55,25 @@ async def handle_post(request):
         headers = {
             'x-my-jwt' : encoded_jwt
         }
-
-
-        resp = requests.post("http://server:8001", data=result, headers=headers)
-        print(resp.content, resp.status_code)
+    
+        resp = requests.post(os.environ["SERVER"], headers=headers)
         return web.Response(
             body=resp.content,
             status=resp.status_code,
-            # content_type=resp.content_type,
             headers=resp.headers
         )
+
+        # except:
+        #     return web.Response(
+        #         body=json.dumps({"message" : "client input error"}),
+        #         status=400
+        #     )
 
 
 if __name__ == '__main__':
     app = web.Application()
+    app["num_requests"] = 0
+    app["start_time"] = time.time()
     app.add_routes([
         web.get("/status", handle_status),
         web.post('/{path:\w*}',handle_post)

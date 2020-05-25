@@ -16,14 +16,16 @@ Append the JWT as the `x-my-jwt` header to the upstream post request.The upstrea
 
 ## assumptions
 
+"http://server:8001"
+
 
 ## repo structure
  - proxy_server/ *the actual app*
     - requirements.txt *dependencies of this application*
  - tests/ *tests using aiohttp test client*
  - .travis.yml *travis CI, runs tests and linting atm*
- - ./docker-compose.yml *docker compose file, contains flask app and a redis container for caching*
- - ./Dockerfile *docker file for the flask application*
+ - ./docker-compose.yml *docker compose file, contains aiohttp app and a redis container for caching*
+ - ./Dockerfile *docker file for the aiohttp application*
 
 
 ## build and run docker container
