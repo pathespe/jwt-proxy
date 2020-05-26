@@ -2,8 +2,8 @@ import os
 import time
 import json
 import uuid
-
 from datetime import datetime
+
 import aiohttp
 import jwt
 import requests
@@ -24,38 +24,38 @@ async def handle_status(request):
     return web.Response(body=json.dumps(body), headers={"contentType" : "application/json"})
 
 
-async def read_stream(request):
+async def read_stream(content):
     empty_bytes = b''
     result = empty_bytes
     while True:
-        chunk = await request.content.read(8)
+        chunk = await content.read(8)
         if chunk == empty_bytes:
             break
         result += chunk
     return result
 
-
+def create_jwt_header(body):
+    data = json.loads(body.decode("utf-8"))
+    data["iat"] = datetime.utcnow()
+    data["jti"] = str(uuid.uuid4())
+    return jwt.encode(
+        data, 
+        os.environ["SECRET"], 
+        algorithm='HS512'
+    )
 
 async def handle_post(request):
 
 
-    request.app['num_requests'] =+ 1
+    request.app['num_requests'] += 1
+
     if request.body_exists:
 
-        body = await read_stream(request)
-        data = json.loads(body.decode("utf-8"))
-        data["iat"] = datetime.utcnow()
-        data["jti"] = str(uuid.uuid4())
-        encoded_jwt = jwt.encode(
-            data, 
-            os.environ["SECRET"], 
-            algorithm='HS512'
-        )
-
+        content = await read_stream(request.content)
         headers = {
-            'x-my-jwt' : encoded_jwt
+            'x-my-jwt' : create_jwt_header(content)
         }
-    
+
         resp = requests.post(os.environ["SERVER"], headers=headers)
         return web.Response(
             body=resp.content,
@@ -63,11 +63,11 @@ async def handle_post(request):
             headers=resp.headers
         )
 
-        # except:
-        #     return web.Response(
-        #         body=json.dumps({"message" : "client input error"}),
-        #         status=400
-        #     )
+    else:
+        return web.Response(
+            body=json.dumps({"message" : "client input error"}),
+            status=400
+        )
 
 
 if __name__ == '__main__':

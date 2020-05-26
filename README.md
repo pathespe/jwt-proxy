@@ -15,12 +15,14 @@ The JWT should be signed with the following hex string secret using the `HS512` 
 Append the JWT as the `x-my-jwt` header to the upstream post request.The upstream post endpoint can be any dummy endpoint. 
 
 ## assumptions
+jwt proxy binds on port 8000
+server on port 8001
 
 "http://server:8001"
 
 
 ## repo structure
- - proxy_server/ *the actual app*
+ - jwt_proxy/ *the actual app*
     - requirements.txt *dependencies of this application*
  - tests/ *tests using aiohttp test client*
  - .travis.yml *travis CI, runs tests and linting atm*
@@ -35,16 +37,28 @@ $ make build
 ```
 
 ## testing
-run pytest from root directory, it will discover tests in tests/
 ```
 $ make test
 ```
 
 ## linting
-run linting on files in proxy_server app
+run linting on files in both apps
 ```
 $ make lint 
 ```
+## useful stuff
+
+curl commands
+```
+curl --location --request POST 'http://localhost:8000/' \
+--header 'Content-Type: application/javascript' \
+--data-raw '{"user": "joe", "date": "2020-05-25T20:03:16.090206"}'
+```
+
+```
+curl --location --request GET 'http://localhost:8000/status'
+```
+
 
 ## further improvements
 
