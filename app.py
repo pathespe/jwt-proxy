@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """app.py docstring
-
+entry point for jwt proxy
 """
 import time
 
 from dotenv import load_dotenv
 from aiohttp import web
-from jwt_proxy import handle_post, handle_status
+from jwt_proxy.jwt_proxy import handle_post, handle_status
 
 
 load_dotenv(dotenv_path=".env", verbose=True)

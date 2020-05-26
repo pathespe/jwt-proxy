@@ -3,7 +3,7 @@ services:
   jwt_proxy:
     build:
       context: .
-      dockerfile: jwt_proxy/Dockerfile
+      dockerfile: Dockerfile
     ports:
      - "8000:8000"
     volumes:

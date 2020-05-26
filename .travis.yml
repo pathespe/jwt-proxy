@@ -5,7 +5,7 @@ python:
   - "3.8"
   - "nightly"
 install:
-  - pip install -r jwt_proxy/requirements.txt
+  - pip install -r ./requirements.txt
 script:
   - pytest
   - pylint server/

@@ -39,8 +39,10 @@ $ make run
 ```
 
 ## testing
-pytest has been used to test the project
+pytest has been used to test the project. run tests locally you will need to pip install the requirements.txt file and then run tests
+
 ```
+$ pip install -r requirements.txt
 $ make test
 ```
 

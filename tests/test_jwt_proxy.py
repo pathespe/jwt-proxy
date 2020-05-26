@@ -9,13 +9,16 @@ import pytest
 from dotenv import load_dotenv
 
 
-from jwt_proxy.app import create_app
+from app import create_app
 from jwt_proxy.jwt_proxy import (
     handle_post, 
     handle_status, 
     create_jwt_header
 )
+
+
 load_dotenv("../.env")
+
 
 @pytest.fixture
 def cli(loop, aiohttp_client):
@@ -28,6 +31,7 @@ async def test_set_value(cli):
     assert resp.status == 400
     resp = await cli.post("/")
     assert resp.status == 400
+
 
 async def test_get_value(cli):
 
