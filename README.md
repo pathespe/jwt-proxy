@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/pathespe/jwt-proxy.svg?branch=master)](https://travis-ci.com/pathespe/jwt-proxy)
 
-a HTTP proxy that takes a `POST` request and appends a `JSON Web Token` with the following claims:
+a [aiohttp](https://docs.aiohttp.org/en/stable/) proxy that takes a `POST` request and appends a `JSON Web Token` with the following claims:
 
 `iat` - Timestamp of the request as specified by the specification
 
@@ -13,6 +13,9 @@ a HTTP proxy that takes a `POST` request and appends a `JSON Web Token` with the
 The JWT should be signed with the following hex string secret using the `HS512` alogrithm as in the JWT spec.
 
 Append the JWT as the `x-my-jwt` header to the upstream post request. The upstream post endpoint can be any dummy endpoint. 
+
+
+__built with python3.8, tested with versions 3.6-3.8__
 
 ## setup
 
@@ -76,5 +79,6 @@ curl --location --request GET 'http://localhost:8000/status'
 
  - separate out dev dependencies and deploy deps from requirements.txt
  - more tests/integration testing
+ - mock upstream server
  - terraform infra to host container
  - more docs, swagger etc.
