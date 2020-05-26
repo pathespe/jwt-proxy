@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/pathespe/jwt-proxy.svg?branch=master)](https://travis-ci.com/pathespe/jwt-proxy)
 
+
 a [aiohttp](https://docs.aiohttp.org/en/stable/) proxy that takes a `POST` request and appends a `JSON Web Token` with the following claims:
 
 `iat` - Timestamp of the request as specified by the specification
@@ -66,9 +67,12 @@ curl --location --request GET 'http://localhost:8000/status'
 ```
 
 ## repo structure
- - jwt_proxy/ *the actual app*
-    - requirements.txt *dependencies of this application*
-    - ./Dockerfile *docker file for the aiohttp application*
+ - ./Dockerfile *docker file for the aiohttp application*
+ - ./requirements.txt *dependencies of this application*
+ - app.py *entry point*
+ - makefile *used to run dev commands*
+ - template.env *a template env file for dev purposes*
+ - jwt_proxy/ *the proxy server routes*
  - server/ *the actual app*
     - requirements.txt *dependencies of this application*
     - ./Dockerfile *docker file for the aiohttp application*
