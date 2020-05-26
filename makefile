@@ -12,6 +12,7 @@ test:
 
 lint:
 	pylint jwt_proxy/
+	pylint server/
 
 coverage:
 	coverage run -m pytest tests/

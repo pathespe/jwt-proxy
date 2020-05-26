@@ -1,50 +1,68 @@
+import os
 import json
 import time
 
 from aiohttp import web
 from aiohttp.test_utils import make_mocked_request
+import jwt
 import pytest
-
-from jwt_proxy.jwt_proxy import handle_post, handle_status, create_jwt_header
-
-
-def handler(request):
-    assert request.headers.get('token') == 'x'
-    return web.Response(body=b'data')
+from dotenv import load_dotenv
 
 
-async def previous(request):
-    if request.method == 'POST':
-        request.app['value'] = (await request.post())['value']
-        return web.Response(body=b'thanks for the data')
-    return web.Response(
-        body='value: {}'.format(request.app['value']).encode('utf-8'))
-
+from jwt_proxy.app import create_app
+from jwt_proxy.jwt_proxy import (
+    handle_post, 
+    handle_status, 
+    create_jwt_header
+)
+load_dotenv("../.env")
 
 @pytest.fixture
 def cli(loop, aiohttp_client):
-    app = web.Application()
-    app["num_requests"] = 0
-    app["start_time"] = time.time()
-    app.router.add_get('/status', handle_status)
-    app.router.add_post('/', handle_post)
+    app = create_app()
     return loop.run_until_complete(aiohttp_client(app))
 
 
 async def test_set_value(cli):
-    resp = await cli.post('/', data={"user": "joe", "date": "2020-05-25T20:03:16.090206"})
-    assert resp.status == 200
-
+    resp = await cli.post("/")
+    assert resp.status == 400
+    resp = await cli.post("/")
+    assert resp.status == 400
 
 async def test_get_value(cli):
-    cli.server.app['num_requests'] = 0
-    resp = await cli.get('/status')
+
+    cli.server.app["num_requests"] = 0
+
+    resp = await cli.get("/status")
     assert resp.status == 200
     resp_obj = json.loads(await resp.text())
-    assert  resp_obj["num_requests"] == 1
+    assert  resp_obj["numberRequests"] == 1
+
+    resp = await cli.get("/status")
+    assert resp.status == 200
+    resp_obj = json.loads(await resp.text())
+    assert  resp_obj["numberRequests"] == 2
+
+    cli.server.app["num_requests"] = 0
+
+    resp = await cli.get("/status")
+    assert resp.status == 200
+    resp_obj = json.loads(await resp.text())
+    assert  resp_obj["numberRequests"] == 1
 
 
-def test_handler():
-    req = make_mocked_request('GET', '/', headers={'x-my-jwt' : create_jwt_header(content)})
-    resp = handler(req)
-    assert resp.body == b'data'
+async def test_jwt_creation():
+
+    content = {"user": "joe", "date": "2020-05-25T20:03:16.090206"}
+    jwtoken = await create_jwt_header(content)
+    data = jwt.decode(
+        jwtoken,
+        os.environ["SECRET"],
+        algorithm="HS512",
+        options={"require": ["jti", "iat"]}
+    )
+    assert len(data.keys()) == 4
+    assert "jti" in data.keys()
+    assert "iat" in data.keys()
+    assert data["user"] == "joe"
+    assert data["date"] == "2020-05-25T20:03:16.090206"

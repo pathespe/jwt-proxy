@@ -1,60 +1,55 @@
+# -*- coding: utf-8 -*-
+"""jwt_proxy.py docstring
+
+"""
+
 import os
 import time
 import json
 import uuid
 from datetime import datetime
 
-import aiohttp
 import jwt
 import requests
 from dotenv import load_dotenv
 from aiohttp import web
 
 
-load_dotenv(dotenv_path='.env', verbose=True)
+load_dotenv(dotenv_path=".env", verbose=True)
 
 
 async def handle_status(request):
+    """handle status request"""
 
-    request.app['num_requests'] += 1
+    request.app["num_requests"] += 1
     body = {
         "uptime" : time.time() - request.app["start_time"],
-        "numberRequests" : request.app['num_requests']
+        "numberRequests" : request.app["num_requests"]
     }
     return web.Response(body=json.dumps(body), headers={"contentType" : "application/json"})
 
 
-async def read_stream(content):
-    empty_bytes = b''
-    result = empty_bytes
-    while True:
-        chunk = await content.read(8)
-        if chunk == empty_bytes:
-            break
-        result += chunk
-    return result
-
-def create_jwt_header(body):
-    data = json.loads(body.decode("utf-8"))
+async def create_jwt_header(data):
+    """decode body and add claims"""
     data["iat"] = datetime.utcnow()
     data["jti"] = str(uuid.uuid4())
     return jwt.encode(
-        data, 
-        os.environ["SECRET"], 
-        algorithm='HS512'
+        data,
+        os.environ["SECRET"],
+        algorithm="HS512"
     )
 
+
 async def handle_post(request):
+    """
+    handles posts made to server checks a body exists and then appends jwt header
+    """
 
-
-    request.app['num_requests'] += 1
-
+    request.app["num_requests"] += 1
     if request.body_exists:
 
-        content = await read_stream(request.content)
-        headers = {
-            'x-my-jwt' : create_jwt_header(content)
-        }
+        headers = dict(request.headers)
+        headers["x-my-jwt"] = await create_jwt_header(await request.json())
 
         resp = requests.post(os.environ["SERVER"], headers=headers)
         return web.Response(
@@ -63,20 +58,7 @@ async def handle_post(request):
             headers=resp.headers
         )
 
-    else:
-        return web.Response(
-            body=json.dumps({"message" : "client input error"}),
-            status=400
-        )
-
-
-if __name__ == '__main__':
-    app = web.Application()
-    app["num_requests"] = 0
-    app["start_time"] = time.time()
-    app.add_routes([
-        web.get("/status", handle_status),
-        web.post('/{path:\w*}',handle_post)
-        ]
+    return web.Response(
+        body=json.dumps({"message" : "client input error"}),
+        status=400
     )
-    web.run_app(app, port=8000)
