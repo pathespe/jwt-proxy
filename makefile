@@ -1,4 +1,3 @@
-# HTTP_PORT=8000
 
 build:
 	docker-compose build 
@@ -14,5 +13,5 @@ lint:
 	pylint server/
 
 coverage:
-	coverage run -m pytest tests/
-	coverage report -m jwt_proxy/ --source=.
+	coverage run --source=jwt_proxy -m pytest tests/
+	coverage report -m 

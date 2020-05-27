@@ -1,6 +1,6 @@
 # async jwt proxy 
 
-[![Build Status](https://travis-ci.com/pathespe/jwt-proxy.svg?branch=master)](https://travis-ci.com/pathespe/jwt-proxy)
+[![Build Status](https://travis-ci.org/pathespe/jwt-proxy.svg?branch=master)](https://travis-ci.org/pathespe/jwt-proxy)
 
 
 a [aiohttp](https://docs.aiohttp.org/en/stable/) proxy that takes a `POST` request and appends a `JSON Web Token` with the following claims:
